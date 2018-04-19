@@ -12,7 +12,7 @@ from keras.callbacks import ModelCheckpoint
 
 # Read the driving log csv files from the two tracks
 lines = []
-data_files = ['driving_log_track1.csv', 'driving_log_track_2.csv',  'driving_log_zigzag.csv', 'driving_log_udacity.csv']
+data_files = ['driving_log_track1.csv', 'driving_log_track_2.csv',  'driving_log_udacity.csv']
 
 for file in data_files:
     csvfile = open(file)
