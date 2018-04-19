@@ -144,6 +144,7 @@ Finally to increase the robustness of my model, I decided to Augment the dataset
 * Horizontal Flip (here the steeering angle should also invert)
 * Intensity change
 * Horizontal and Vertical shift.
+
 Below you can see the original image (Left) and the corresponding augmented images (Right) for some random training dataset images.
 
 ![augmented](augmented_images.png)
@@ -152,3 +153,5 @@ Below you can see the original image (Left) and the corresponding augmented imag
 For augmentation I created a generator function which will continue the process indefinitely, and called it at the time of fitting the model using Keras ```fit_generator``` method.
 
 Using Adam optimization the network was finally trained for 30 epochs.
+
+In the end I would say, that I wanted to build an end-to-end model using deep learning, and I was successful in making it happen without making any changes in the dataset collected.
