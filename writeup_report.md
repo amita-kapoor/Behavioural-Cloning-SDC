@@ -1,8 +1,6 @@
 # **Behavioral Cloning** 
 
-## Writeup Template
-
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+## Writeup Report Behavioural Cloning project
 
 ---
 
@@ -25,11 +23,11 @@ The goals / steps of this project are the following:
 #### 1. Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
-* model.py contains the script to create and train the model, it also contains the utilities needed for preprocessing and Data Generation and Augmentation.
-* video.mp4 a video showing the car running in autonomous mode on track 1.
-* drive.py is unchanges, exactly as provided by the Udacity.
-* model.h5 containing a trained convolution neural network 
-* writeup_report.md summarizing the results
+* __model.py__ contains the script to create and train the model, it also contains the utilities needed for preprocessing and Data Generation and Augmentation.
+* __video.mp4__ a video showing the car running in autonomous mode on track 1.
+* __drive.py__ is unchanges, exactly as provided by the Udacity.
+* __model.h5__ containing a trained convolution neural network 
+* __writeup_report.md__ summarizing the results
 
 #### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
@@ -53,7 +51,7 @@ The figure below is the model architecture that I used
 The model consists of 5 convolutional layers, the first three have kernel size of ```5 x 5``` ensuring a wider look into the input image, and 24, 36, and 48 filters respectively. The last two convolutional layers have the kernel size ```3 x 3``` and 64 filters each.  All the convolutional layers use **Elu** activation function to ensure non-linearity. The output of the last convolutional layer is Flattened. Next we add fully connected layes to perform the task of regression based on the features extracted by convolutional layers.
 There are four fully connected layers with neurons 100, 50 10 and 1 respectively.
 
-I also hard wired both Cropping (model.py line ) and Normalization (model.py line) in my model so that the process can make use of the GPU speed. 
+I also hard wired both Cropping (model.py line 107) and Normalization (model.py line 110) in my model so that the process can make use of the GPU speed. 
 
 The complete model is defined in the model.py file in lines 104-131. 
 
@@ -91,28 +89,33 @@ For details about how I created the training data, see the next section.
 
 #### 1. Solution Design Approach
 
-Initially I experimented with a very simple MLP model and used only center camera image, it was utter failure the car just kept moving in circles. Then as I added the CNN layers the car started to stay more on road, but was still not able to handle curves. With the introduction of **Nvidia Dave model** the performance improved further, but now car was failing at sharp turns.
+From starting to deal with the problem of overfitting i had my dataset split into training (80%) and validation set (20%). The MSE loss of training and validation dataset enables us to know if our model is overfitting or underfitting. 
+
+Initially I experimented with a very simple MLP model and used only center camera image, it was utter failure the car just kept moving in circles. Then as I added the CNN layers the car started to stay more on road, but was still not able to handle curves. With the introduction of **Nvidia Dave model** the performance improved further, it could maneuvre soft turns, but now car was failing at sharp turns.
 This forced me to look at my training data. From the plot of training and validation loss, I knew the problem is not of overfitting, but instead the model has not learned to take sharp turns, which were at times necessary.
 
 ![Loss](Figure_1.png)
 
+To teach model sharp turns the training dataset needs sufficient sharp turns, one way to generate this was driving zig-zag fashion, and so getting large turns, but this could lead the model to learn to drive in zig-zag and not straight, so I decided against it.
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
+Instead I decided to use the left and right camera images along with corrected steering angle. the correction in steering anfle took sometime to optimize but finally a correction of 0.35 seemed a good option.
 
-To combat the overfitting, I modified the model so that ...
 
-Then I ... 
+The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle almost was going off the track, but it saved itself everytime. Still, had I been sitting on the car that would have given me serious heart attacks!! 
 
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
+But still it is remarkable that at the end of the process, the car was able to drive autonomously around the track without leaving the road. :muscle:
 
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
+The things which I will try to improve my model given sufficient time (On my ```GTX 1070``` 30 epochs took about 3 hours) are:
+
+1. Since both validation and training loss were still decreasing, increasing the epochs will help in making the model learn further.
+2. Right now we have only two tracks, increasing the dataset will definitely help.
+3. I will try BatchNormalization instead of Dropout, it seems to give good results in classification tasks, it may help here as well.
+
+
 
 #### 2. Final Model Architecture
 
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
-
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
+The final model architecture (model.py lines 104-131) consisted of a convolution neural network with the following layers and layer sizes.
 ![Model summary](model_summary.png)
 
 #### 3. Creation of the Training Set & Training Process
@@ -121,25 +124,23 @@ To capture good driving behavior, I first had two laps on track-one recorded usi
 
 ![Center](center_track_1.jpg)
 
-I repetaed the center lane driving on 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+I repetaed the center lane driving on track 2 later
+![center_2](center_track_2.jpg)
 
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
+This resulted in total 5311  center images from track 1, 7099 images from track 2. I also used the sample dataset provided by Udacity containing 8036 center images. Making a total of 5311+7099+8036=20446 center camera images
 
-Then I repeated this process on track two in order to get more data points.
+While the lecture suggested that I record the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to recover, I tried doing it, but it ended the car running in zig zag fashion on the road, and I feared the model will learn this behaviour. 
 
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
+So instead I used left and right camera images with a little high correction factor. This provided me with ```20446*3=61338``` images. it is a good number. These images were shuffled and split into training and validation set using Scikit ```train_test_split``` function, with 80% training datset and 20% Validation dataset.
 
-![alt text][image6]
-![alt text][image7]
+Finally to increase the robustness of my model, I decided to Augment the dataset with following tradition augmentations:
+* Rotation
+* Horizontal Flip (here the steeering angle should also invert)
+* Intensity change
+* Horizontal and Vertical shift.
+Below you can see the original image (Left) and the corresponding augmented images (Right) for some random training dataset images.
+![augmented](augmented_images.png)
 
-Etc ....
+For augmentation I created a generator function which will continue the process indefinitely, and called it at the time of fitting the model using Keras ```fit_generator``` method.
 
-After the collection process, I had X number of data points. I then preprocessed this data by ...
-
-
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+Using Adam optimization the network was finally trained for 30 epochs.
