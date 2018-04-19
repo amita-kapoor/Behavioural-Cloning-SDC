@@ -116,7 +116,9 @@ The things which I will try to improve my model given sufficient time (On my ```
 #### 2. Final Model Architecture
 
 The final model architecture (model.py lines 104-131) consisted of a convolution neural network with the following layers and layer sizes.
+
 ![Model summary](model_summary.png)
+
 
 #### 3. Creation of the Training Set & Training Process
 
@@ -124,8 +126,12 @@ To capture good driving behavior, I first had two laps on track-one recorded usi
 
 ![Center](center_track_1.jpg)
 
+
 I repetaed the center lane driving on track 2 later
+
+
 ![center_2](center_track_2.jpg)
+
 
 This resulted in total 5311  center images from track 1, 7099 images from track 2. I also used the sample dataset provided by Udacity containing 8036 center images. Making a total of 5311+7099+8036=20446 center camera images
 
@@ -139,7 +145,9 @@ Finally to increase the robustness of my model, I decided to Augment the dataset
 * Intensity change
 * Horizontal and Vertical shift.
 Below you can see the original image (Left) and the corresponding augmented images (Right) for some random training dataset images.
+
 ![augmented](augmented_images.png)
+
 
 For augmentation I created a generator function which will continue the process indefinitely, and called it at the time of fitting the model using Keras ```fit_generator``` method.
 
