@@ -46,7 +46,7 @@ The model.py file contains the code for training and saving the convolution neur
 As the base model I used Nvidia model described in the paper [End-to-End Deep Learning for Self-Driving Cars](https://arxiv.org/pdf/1604.07316v1.pdf). 
 
 The figure below is the model architecture that I used
-![Model summary](model_summary.png)
+![Model summary](architecture.png)
 
 The model consists of 5 convolutional layers, the first three have kernel size of ```5 x 5``` ensuring a wider look into the input image, and 24, 36, and 48 filters respectively. The last two convolutional layers have the kernel size ```3 x 3``` and 64 filters each.  All the convolutional layers use **Elu** activation function to ensure non-linearity. The output of the last convolutional layer is Flattened. Next we add fully connected layes to perform the task of regression based on the features extracted by convolutional layers.
 There are four fully connected layers with neurons 100, 50 10 and 1 respectively.
