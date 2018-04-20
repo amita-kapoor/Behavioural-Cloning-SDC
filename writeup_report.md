@@ -25,6 +25,7 @@ The goals / steps of this project are the following:
 My project includes the following files:
 * __model.py__ contains the script to create and train the model, it also contains the utilities needed for preprocessing and Data Generation and Augmentation.
 * __video.mp4__ a video showing the car running in autonomous mode on track 1.
+* __video_track2.mp4__ a video showing the car running in autonomous mode on track 2.
 * __drive.py__ is unchanges, exactly as provided by the Udacity.
 * __model.h5__ containing a trained convolution neural network 
 * __writeup_report.md__ summarizing the results
@@ -45,7 +46,7 @@ The model.py file contains the code for training and saving the convolution neur
 
 As the base model I used Nvidia model described in the paper [End-to-End Deep Learning for Self-Driving Cars](https://arxiv.org/pdf/1604.07316v1.pdf). 
 
-The figure below is the model architecture that I used
+The figure below is the model architecture that I intially used
 ![Model summary](architecture.png)
 
 The model consists of 5 convolutional layers, the first three have kernel size of ```5 x 5``` ensuring a wider look into the input image, and 24, 36, and 48 filters respectively. The last two convolutional layers have the kernel size ```3 x 3``` and 64 filters each.  All the convolutional layers use **Elu** activation function to ensure non-linearity. The output of the last convolutional layer is Flattened. Next we add fully connected layes to perform the task of regression based on the features extracted by convolutional layers.
@@ -53,7 +54,13 @@ There are four fully connected layers with neurons 100, 50 10 and 1 respectively
 
 I also hard wired both Cropping (model.py line 107) and Normalization (model.py line 110) in my model so that the process can make use of the GPU speed. 
 
-The complete model is defined in the model.py file in lines 104-131. 
+This model gave me a good result on Track 1, but on the __challenge track 2__ it lasted only 37 seconds and crashed with a pole. Below you can see the model and details of its layers.
+
+![Model summary](model_summary.png)
+
+It was obvious to coimplete the challenge something more was needed. Recently a new technique **Batch Normalization** was proposed by Ioffe and Szegedy in the paper, ["Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"](https://arxiv.org/abs/1502.03167), according to them it acheives higher accuracy in less time. Time here was indeed short, since the previous model took roughly 3-4 hours in training for only 30 epochs, and even after that I could see from the loss plots that model is still learning and increasing epochs will be good. 
+
+It did the trick. The complete model is defined in the model.py file in lines 104-134. 
 
 
 #### 2. Attempts to reduce overfitting in the model
@@ -66,16 +73,20 @@ Overfitting is a common problem, to ensure that overfitting does not happen, fro
 
 * I also used Data Augmentation on the training dataset  (function ```data_generator``` defined in model.py lines 58-93), this helps by making the system robust. According to this paper [The Effectiveness of Data Augmentation in Image Classification using Deep Learning](http://cs231n.stanford.edu/reports/2017/pdfs/300.pdf) augmenation improves the performance by taking care of insufficient information, also since random distortions are introduced in the training dataset this ensures that model does not overfit. While according to the paper neural augmentation gives best result for simplicity I used traditional augmentation methods and performed random horizontal flip, rotation, horizontal and vertical shift and change in brightness (the random distortions were added using function ```distort_random``` defined in model.py lines 29-54). 
 
-After the network was trained the generated model was used to test on track 1, below is the you tube link to that video. As you can see, the car succesfully completed the lap, but there are many places where it is almost on the boundary and might leave the track, had I been sitting in the car would have been terrified :smiley:.
+After the network was trained the generated model was used to test on track 1, below is the you tube link to that video. As you can see, the car completed the lap without any trouble, it was very smooth indeed. :smiley:.
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=wdtUOWjxPIQ
-" target="_blank"><img src="http://img.youtube.com/vi/wdtUOWjxPIQ/0.jpg" 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=_shvBqQR4ns
+" target="_blank"><img src="http://img.youtube.com/vi/_shvBqQR4ns/0.jpg" 
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
+I tried running the model next on track 2, it could run only for 37 seconds after which if crashed into a pole. :unamused:
+
+**The modified Dave model using Batch Normalization drove smoothly on both the tracks :muscle: **
 
 
 #### 3. Model parameter tuning
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 134).
+The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 137).
 
 #### 4. Appropriate training data
 
@@ -89,7 +100,7 @@ For details about how I created the training data, see the next section.
 
 #### 1. Solution Design Approach
 
-From starting to deal with the problem of overfitting i had my dataset split into training (80%) and validation set (20%). The MSE loss of training and validation dataset enables us to know if our model is overfitting or underfitting. 
+From starting to deal with the problem of overfitting I had my dataset split into training (80%) and validation set (20%). The MSE loss of training and validation dataset enables us to know if our model is overfitting or underfitting. 
 
 Initially I experimented with a very simple MLP model and used only center camera image, it was utter failure the car just kept moving in circles. Then as I added the CNN layers the car started to stay more on road, but was still not able to handle curves. With the introduction of **Nvidia Dave model** the performance improved further, it could maneuvre soft turns, but now car was failing at sharp turns.
 This forced me to look at my training data. From the plot of training and validation loss, I knew the problem is not of overfitting, but instead the model has not learned to take sharp turns, which were at times necessary.
@@ -98,26 +109,31 @@ This forced me to look at my training data. From the plot of training and valida
 
 To teach model sharp turns the training dataset needs sufficient sharp turns, one way to generate this was driving zig-zag fashion, and so getting large turns, but this could lead the model to learn to drive in zig-zag and not straight, so I decided against it.
 
-Instead I decided to use the left and right camera images along with corrected steering angle. the correction in steering anfle took sometime to optimize but finally a correction of 0.35 seemed a good option.
+Instead I decided to use the left and right camera images along with corrected steering angle. the correction in steering angle took sometime to optimize but finally a correction of 0.35 seemed a good option.
 
 
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle almost was going off the track, but it saved itself everytime. Still, had I been sitting on the car that would have given me serious heart attacks!! 
+The final step was to run the simulator to see how well the car was driving around track one. The car run smoothly on track 1 :muscle: but could not drive in track 2. 
 
-But still it is remarkable that at the end of the process, the car was able to drive autonomously around the track without leaving the road. :muscle:
+_(P.S. in my first submission this model though still comleting the lap, had gone on edge many times, it was a very stupid mistake on my part, and I am thankful that the Reviewer pointed it out, in model.py I was using ```imread``` to read image which uses BGR channel confuguration, while in drive.py the defualt image reader was PIL ```open``` which return in RGB format and so to speak poetically, the two were wearing different colored glasses :cool: taking care of this fact at drive.py by adding a simple ```cv2.cvtColor(image_new, cv2.COLOR_RGB2BGR)``` was easier since I had after submission already trained another model using Batch Normalization instead of Dropout)_
 
 The things which I will try to improve my model given sufficient time (On my ```GTX 1070``` 30 epochs took about 3 hours) are:
 
 1. Since both validation and training loss were still decreasing, increasing the epochs will help in making the model learn further.
 2. Right now we have only two tracks, increasing the dataset will definitely help.
-3. I will try BatchNormalization instead of Dropout, it seems to give good results in classification tasks, it may help here as well.
+3. I will try BatchNormalization instead of Dropout, it seems to give good results in classification tasks, it may help here as well.(Since I had time I already tried this suggestion)
+
 
 
 
 #### 2. Final Model Architecture
 
-The final model architecture (model.py lines 104-131) consisted of a convolution neural network with the following layers and layer sizes.
+The final model architecture (model.py lines 104-131) consisted of a convolution neural network using Batch normalization with the following layers and layer sizes.
 
-![Model summary](model_summary.png)
+![Model summary](model_summary2.png)
+
+After training you can see from its training and validation loss that model had indeed learned significantly in 50 epochs, and as per expectations it took the same time in training as the previous model took for 30 epochs.
+
+![losses](Figure_2.png)
 
 
 #### 3. Creation of the Training Set & Training Process
@@ -155,3 +171,9 @@ For augmentation I created a generator function which will continue the process 
 Using Adam optimization the network was finally trained for 30 epochs.
 
 In the end I would say, that I wanted to build an end-to-end model using deep learning, and I was successful in making it happen without making any changes in the dataset collected.
+
+The video showing the autonomous drive are in the repo by name ```video.mp4``` (track 1) and ```video_track2.mp4 (track2) ```
+
+You can also see them in **YouTube** directly using the links:
+* [Track 1](https://www.youtube.com/watch?v=Vaj-vkdnrXE)
+* [Track 2](https://www.youtube.com/watch?v=uUlyXcLp0wc)
