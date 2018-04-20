@@ -60,7 +60,7 @@ This model gave me a good result on Track 1, but on the __challenge track 2__ it
 
 It was obvious to coimplete the challenge something more was needed. Recently a new technique **Batch Normalization** was proposed by Ioffe and Szegedy in the paper, ["Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"](https://arxiv.org/abs/1502.03167), according to them it acheives higher accuracy in less time. Time here was indeed short, since the previous model took roughly 3-4 hours in training for only 30 epochs, and even after that I could see from the loss plots that model is still learning and increasing epochs will be good. 
 
-It did the trick. The complete model is defined in the model.py file in lines 104-134. 
+And so I used BatchNormalization instead of droput. It did the trick. The complete model is defined in the model.py file in lines 104-134. 
 
 
 #### 2. Attempts to reduce overfitting in the model
@@ -81,7 +81,7 @@ alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 I tried running the model next on track 2, it could run only for 37 seconds after which if crashed into a pole. :unamused:
 
-**The modified Dave model using Batch Normalization drove smoothly on both the tracks :muscle: **
+##### The modified Dave model using Batch Normalization drove smoothly on both the tracks :muscle: 
 
 
 #### 3. Model parameter tuning
