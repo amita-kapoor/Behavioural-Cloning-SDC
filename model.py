@@ -3,7 +3,7 @@ import csv # to read driver_log csv files
 import cv2 # for image reading and processsing
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout 
+from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout, BatchNormalization
 from keras.layers.convolutional import Conv2D
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
@@ -12,7 +12,7 @@ from keras.callbacks import ModelCheckpoint
 
 # Read the driving log csv files from the two tracks
 lines = []
-data_files = ['driving_log_track1.csv', 'driving_log_track_2.csv',  'driving_log_udacity.csv']
+data_files = ['driving_log_track1.csv', 'driving_log_track_2.csv',  'driving_log_udacity.csv'] #, 'driving_log_zigzag.csv']
 
 for file in data_files:
     csvfile = open(file)
@@ -26,7 +26,7 @@ train_samples, validation_samples = train_test_split(lines, test_size=0.2, rando
 
 
 # Visualizing the data and Cropping the images
-def distort_image(img, angle, rot = 30, shift_px = 10):
+def distort_image(img, angle, rot = 40, shift_px = 20):
     """
     Function to introduce random distortion: brightness, flip, rotation, and shift 
     """
@@ -113,13 +113,16 @@ if __name__ == '__main__':
     model.add(Conv2D(24, (5,5), strides=(2, 2), padding='valid', activation='elu', use_bias=True))
     model.add(Conv2D(36, (5,5), strides=(2, 2), padding='valid', activation='elu', use_bias=True))
     model.add(Conv2D(48, (5,5), strides=(2, 2), padding='valid', activation='elu', use_bias=True))
+    model.add(BatchNormalization(axis=-1))  # Adding batch Normalization
 
     # Two Convolutional layers with Kernel 3x3
     model.add(Conv2D(64, (3,3), strides=(1, 1), padding='valid', activation='elu', use_bias=True))
+    model.add(BatchNormalization(axis=-1))
     model.add(Conv2D(64, (3,3), strides=(1, 1), padding='valid', activation='elu', use_bias=True))
+    model.add(BatchNormalization(axis=-1))
 
     # A droput layer to reduce overfitting
-    model.add(Dropout(0.5))
+    #model.add(Dropout(0.5))
 
     # Flatten the output of last convolutional layer so that it can be fed to MLP layers
     model.add(Flatten())
@@ -138,8 +141,8 @@ if __name__ == '__main__':
 
     # Train the model for with taining and validation dataset generated using generators
     # To ensure best performance the best model is only saved using CheckPointer
-    history = model.fit_generator(train_generator, steps_per_epoch = 1000, validation_data=validation_generator,
-                              validation_steps= 500, epochs=30, verbose=1, callbacks=[checkpointer])
+    history = model.fit_generator(train_generator, steps_per_epoch = 1500, validation_data=validation_generator,
+                              validation_steps= 500, epochs=50, verbose=1, callbacks=[checkpointer])
 
     # Plot the training and validation losses
     plt.plot(history.history['loss'][1:])
